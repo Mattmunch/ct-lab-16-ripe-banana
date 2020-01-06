@@ -15,8 +15,8 @@ describe('app routes', () => {
     return mongoose.connection.dropDatabase();
   });
   let studio;
-  beforeEach(() => {
-    studio = Studio.create({
+  beforeEach(async() => {
+    studio = await Studio.create({
       name: 'Paramount Pictures',
       address: {
         city: 'portland',
@@ -35,7 +35,7 @@ describe('app routes', () => {
       .get('/api/v1/studios')
       .then(res => {
         expect(res.body).toEqual([{
-          _id: expect.any(String),
+          _id: studio.id,
           name: 'Paramount Pictures',
           address: {
             city: 'portland',
@@ -44,6 +44,22 @@ describe('app routes', () => {
           },
           __v:0
         }]);
+      });
+  });
+  it('has a get studio by id route', () => {
+    return request(app)
+      .get(`/api/v1/studios/${studio.id}`)
+      .then(res => {
+        expect(res.body).toEqual({
+          _id: studio.id,
+          name: 'Paramount Pictures',
+          address: {
+            city: 'portland',
+            state: 'oregon',
+            country:'USA'
+          },
+          __v:0
+        });
       });
   });
     
