@@ -22,7 +22,11 @@ describe('app routes', () => {
   let film;
   let studio;
   let reviewer;
-  let review;
+  let review1;
+  let review2;
+  let review3;
+  let review4;
+  let review5;
   beforeEach(async() => {
     studio = await Studio.create({
       name: 'Paramount Pictures',
@@ -50,13 +54,36 @@ describe('app routes', () => {
       name: 'Donald Trump',
       company: 'Trump Enterprises'
     });
-    review = await Review.create({
+    review3 = await Review.create({
+      rating: 3,
+      reviewer: reviewer._id,
+      review: 'This movie was great.',
+      film: film._id
+    });
+    review2 = await Review.create({
+      rating: 4,
+      reviewer: reviewer._id,
+      review: 'This movie was great.',
+      film: film._id
+    });
+    review5 = await Review.create({
+      rating: 1,
+      reviewer: reviewer._id,
+      review: 'This movie was great.',
+      film: film._id
+    });
+    review4 = await Review.create({
+      rating: 2,
+      reviewer: reviewer._id,
+      review: 'This movie was great.',
+      film: film._id
+    });
+    review1 = await Review.create({
       rating: 5,
       reviewer: reviewer._id,
       review: 'This movie was great.',
       film: film._id
     });
-    console.log('!!!!!!!!!!!!!!!!!', review);
   });
 
   afterAll(() => {
@@ -69,15 +96,45 @@ describe('app routes', () => {
       .get('/api/v1/reviews')
       .then(res => {
         expect(res.body).toEqual([{
-          _id: review.id,
-          rating: review.rating,
-          review: review.review,
+          _id: review1.id,
+          rating: review1.rating,
+          review: review1.review,
           film: {
             _id: film.id,
             title: film.title
           }
-
-
+        }, {
+          _id: review2.id,
+          rating: review2.rating,
+          review: review2.review,
+          film: {
+            _id: film.id,
+            title: film.title
+          }
+        }, {
+          _id: review3.id,
+          rating: review3.rating,
+          review: review3.review,
+          film: {
+            _id: film.id,
+            title: film.title
+          }
+        }, {
+          _id: review4.id,
+          rating: review4.rating,
+          review: review4.review,
+          film: {
+            _id: film.id,
+            title: film.title
+          }
+        }, {
+          _id: review5.id,
+          rating: review5.rating,
+          review: review5.review,
+          film: {
+            _id: film.id,
+            title: film.title
+          }
         }]);
       });
   });
