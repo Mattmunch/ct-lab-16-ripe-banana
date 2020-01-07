@@ -70,8 +70,7 @@ describe('app routes', () => {
             state: 'oregon',
             country: 'USA',
           },
-          films: films.map(film => ({ _id: film._id.toString(), title: film.title, studio: film.studio.toString() })),
-          __v:0
+          films: films.map(film => ({ _id: film._id.toString(), title: film.title })),
         });
       });
   });
