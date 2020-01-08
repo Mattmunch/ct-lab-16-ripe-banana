@@ -138,4 +138,18 @@ describe('app routes', () => {
         }]);
       });
   });
+
+  it('has a delete by id route', () => {
+    return request(app)
+      .delete(`/api/v1/reviews/${review1.id}`)
+      .then(res => {
+        expect(res.body).toEqual({
+          _id: review1.id,
+          rating: review1.rating,
+          review: review1.review,
+          film: film.id,
+          reviewer: reviewer.id
+        });
+      });
+  });
 });
