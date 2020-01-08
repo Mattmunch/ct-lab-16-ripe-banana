@@ -68,7 +68,7 @@ describe('app routes', () => {
           dob: '1991-12-23T00:00:00.000Z',
           pob:'LA',
           films: films.map(film => ({ _id: film.id, title: film.title, released: film.released }))
-        });
+        }); 
       });
   });
 });
