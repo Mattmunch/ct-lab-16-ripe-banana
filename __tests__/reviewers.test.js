@@ -5,6 +5,12 @@ const app = require('../lib/app');
 const connect = require('../lib/utils/connect');
 const mongoose = require('mongoose');
 const Reviewer = require('../lib/models/Reviewer');
+const Studio = require('../lib/models/Studio');
+const Review = require('../lib/models/Review');
+const Actor = require('../lib/models/Actor');
+const Film = require('../lib/models/Film');
+
+
 
 describe('app routes', () => {
   beforeAll(() => {
@@ -14,12 +20,48 @@ describe('app routes', () => {
   beforeEach(() => {
     return mongoose.connection.dropDatabase();
   });
+  let studio;
   let reviewer;
+  let reviews;
+  let actor;
+  let films;
   beforeEach(async() => {
+    studio = await Studio.create({
+      name: 'Paramount Pictures',
+      address: {
+        city: 'portland',
+        state: 'oregon',
+        country: 'USA'
+      },
+    });
+    actor = await Actor.create({
+      name: 'Bilbo Baggins',
+      dob: '1991-12-12',
+      pob:'Mordor'
+    });
+    films = await Film.create([{
+      title: 'AirBud',
+      studio: studio.id,
+      released: 2020,
+      cast: [{
+        role: 'poopoo',
+        actor: actor._id
+      }]
+    }]);
     reviewer = await Reviewer.create({
       name: 'Turd Burgular',
       company:'Roto-Rooter'
     });
+    reviews = await Review.create([{
+      rating: 3,
+      reviewer: reviewer._id,
+      review: 'This movie was great.',
+      film: {
+        _id: films[0]._id,
+        title: films[0].title
+      } 
+        
+    }]);
   });
 
   afterAll(() => {
@@ -45,8 +87,16 @@ describe('app routes', () => {
         expect(res.body).toEqual({
           _id: reviewer.id,
           name: 'Turd Burgular',
-          company:'Roto-Rooter',
-          __v:0
+          company: 'Roto-Rooter',
+          reviews: [{
+            _id: reviews[0].id,
+            rating: reviews[0].rating,
+            review: reviews[0].review,
+            film: {
+              _id: films[0].id,
+              title: films[0].title
+            }
+          }]
         });
       });
   });
