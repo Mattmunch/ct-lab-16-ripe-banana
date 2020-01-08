@@ -22,6 +22,7 @@ describe('app routes', () => {
   });
   let studio;
   let reviewer;
+  let reviewer2;
   let reviews;
   let actor;
   let films;
@@ -52,6 +53,10 @@ describe('app routes', () => {
       name: 'Turd Burgular',
       company:'Roto-Rooter'
     });
+    reviewer2 = await Reviewer.create({
+      name: 'Turd Burgular2',
+      company:'Roto-Rooter2'
+    });
     reviews = await Review.create([{
       rating: 3,
       reviewer: reviewer._id,
@@ -77,6 +82,11 @@ describe('app routes', () => {
           name: 'Turd Burgular',
           company:'Roto-Rooter',
           __v:0
+        }, {
+          _id: reviewer2.id,
+          name: 'Turd Burgular2',
+          company:'Roto-Rooter2',
+          __v:0
         }]);
       });
   });
@@ -97,6 +107,29 @@ describe('app routes', () => {
               title: films[0].title
             }
           }]
+        });
+      });
+  });
+
+  it('has a delete reviewer by id unless they have reviews', () => {
+    return request(app)
+      .delete(`/api/v1/reviewers/${reviewer.id}`)
+      .then(res => {
+        expect(res.body).toEqual({
+          message: 'Reviewer cannot be deleted while reviews still present',
+          status: 500
+        });
+      });
+  });
+  it('has a delete reviewer by id if they dont have reviews', async() => {
+    return request(app)
+      .delete(`/api/v1/reviewers/${reviewer2.id}`)
+      .then(res => {
+        expect(res.body).toEqual({
+          __v: 0,
+          _id: reviewer2.id,
+          company: 'Roto-Rooter2',
+          name: 'Turd Burgular2',
         });
       });
   });
