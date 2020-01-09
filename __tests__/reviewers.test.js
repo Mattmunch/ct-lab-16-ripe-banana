@@ -1,119 +1,40 @@
-require('dotenv').config();
-
+const { getReviewer, getReviewers, getReview } = require('../lib/helpers/data-helpers');
 const request = require('supertest');
 const app = require('../lib/app');
-const connect = require('../lib/utils/connect');
-const mongoose = require('mongoose');
-const Reviewer = require('../lib/models/Reviewer');
-const Studio = require('../lib/models/Studio');
 const Review = require('../lib/models/Review');
-const Actor = require('../lib/models/Actor');
-const Film = require('../lib/models/Film');
 
 
 
-describe('app routes', () => {
-  beforeAll(() => {
-    connect();
-  });
+describe('reviewer routes', () => {
 
-  beforeEach(() => {
-    return mongoose.connection.dropDatabase();
-  });
-  let studio;
-  let reviewer;
-  let reviewer2;
-  let reviews;
-  let actor;
-  let films;
-  beforeEach(async() => {
-    studio = await Studio.create({
-      name: 'Paramount Pictures',
-      address: {
-        city: 'portland',
-        state: 'oregon',
-        country: 'USA'
-      },
-    });
-    actor = await Actor.create({
-      name: 'Bilbo Baggins',
-      dob: '1991-12-12',
-      pob:'Mordor'
-    });
-    films = await Film.create([{
-      title: 'AirBud',
-      studio: studio.id,
-      released: 2020,
-      cast: [{
-        role: 'poopoo',
-        actor: actor._id
-      }]
-    }]);
-    reviewer = await Reviewer.create({
-      name: 'Turd Burgular',
-      company:'Roto-Rooter'
-    });
-    reviewer2 = await Reviewer.create({
-      name: 'Turd Burgular2',
-      company:'Roto-Rooter2'
-    });
-    reviews = await Review.create([{
-      rating: 3,
-      reviewer: reviewer._id,
-      review: 'This movie was great.',
-      film: {
-        _id: films[0]._id,
-        title: films[0].title
-      } 
-        
-    }]);
-  });
-
-  afterAll(() => {
-    return mongoose.connection.close();
-  });
-
-  it('has a get all reviewers route', () => {
+  it('has a get all reviewers route', async() => {
+    const reviewers = await getReviewers();
     return request(app)
       .get('/api/v1/reviewers')
       .then(res => {
-        expect(res.body).toEqual([{
-          _id: reviewer.id,
-          name: 'Turd Burgular',
-          company:'Roto-Rooter',
-          __v:0
-        }, {
-          _id: reviewer2.id,
-          name: 'Turd Burgular2',
-          company:'Roto-Rooter2',
-          __v:0
-        }]);
+        expect(res.body).toEqual(reviewers);
       });
   });
-  it('has a get reviewer by id route', () => {
+  it('has a get reviewer by id route', async() => {
+    const reviewer = await getReviewer();
     return request(app)
-      .get(`/api/v1/reviewers/${reviewer.id}`)
+      .get(`/api/v1/reviewers/${reviewer._id}`)
       .then(res => {
         expect(res.body).toEqual({
-          _id: reviewer.id,
-          name: 'Turd Burgular',
-          company: 'Roto-Rooter',
-          reviews: [{
-            _id: reviews[0].id,
-            rating: reviews[0].rating,
-            review: reviews[0].review,
-            film: {
-              _id: films[0].id,
-              title: films[0].title
-            }
-          }]
+          _id: reviewer._id.toString(),
+          name: reviewer.name,
+          company: reviewer.company,
+          reviews: expect.any(Array)
         });
       });
   });
 
-  it('has a delete reviewer by id unless they have reviews', () => {
+  it('has a delete reviewer by id unless they have reviews', async() => {
+    const review = await getReview();
+    const reviewer = await getReviewer({ _id: review.reviewer });
+    
     return request(app)
-      .delete(`/api/v1/reviewers/${reviewer.id}`)
+      .delete(`/api/v1/reviewers/${reviewer._id}`)
       .then(res => {
         expect(res.body).toEqual({
           message: 'Reviewer cannot be deleted while reviews still present',
@@ -122,14 +43,16 @@ describe('app routes', () => {
       });
   });
   it('has a delete reviewer by id if they dont have reviews', async() => {
+    const reviewer = await getReviewer();
+    await Review.deleteMany({ reviewer: reviewer._id });
     return request(app)
-      .delete(`/api/v1/reviewers/${reviewer2.id}`)
+      .delete(`/api/v1/reviewers/${reviewer._id}`)
       .then(res => {
         expect(res.body).toEqual({
           __v: 0,
-          _id: reviewer2.id,
-          company: 'Roto-Rooter2',
-          name: 'Turd Burgular2',
+          _id: reviewer._id,
+          company: reviewer.company,
+          name: reviewer.name,
         });
       });
   });
