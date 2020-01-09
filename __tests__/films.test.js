@@ -1,20 +1,30 @@
-require('dotenv').config();
-
+const { getFilms, getFilm } = require('../lib/helpers/data-helpers');
 const request = require('supertest');
 const app = require('../lib/app');
-const connect = require('../lib/utils/connect');
-const mongoose = require('mongoose');
+
 
 describe('app routes', () => {
-  beforeAll(() => {
-    connect();
+  it('has a get all films route', async() => {
+    const films = await getFilms();
+    return request(app)
+      .get('/api/v1/films')
+      .then(res => {
+        expect(res.body).toEqual(films.map(film => ({
+          _id: film._id, title: film.title, released: film.released, studio: expect.any(Object)
+        })));
+      });
   });
-
-  beforeEach(() => {
-    return mongoose.connection.dropDatabase();
-  });
-
-  afterAll(() => {
-    return mongoose.connection.close();
+  it('has a get film by id route', async() => {
+    const film = await getFilm();
+    return request(app)
+      .get(`/api/v1/films/${film._id}`)
+      .then(res => {
+        expect(res.body).toEqual({
+          _id: film._id.toString(),
+          title: film.title,
+          studio: expect.any(Object), released: film.released,
+          cast: expect.any(Array), reviews: expect.any(Array)
+        });
+      });
   });
 });
